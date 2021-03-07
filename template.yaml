@@ -6,14 +6,16 @@ Description: >
   SAM Template for basic-lambda-service 
     API Gateway -> Lambda -> DynamoDB 
 
-Globals:
-  Function:
-    Timeout: 30
-
 Parameters:
   REGION:
     Type: String
     Default: us-east-1
+
+Globals:
+  Function:
+    Timeout: 30
+    Layers:
+      - !Sub "arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14"
 
 Resources:
   EntitiesTable:
@@ -50,6 +52,7 @@ Resources:
             Path: /entities
             Method: get       
       Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy     
         - DynamoDBCrudPolicy:
             TableName: !Ref EntitiesTable
 
@@ -69,6 +72,7 @@ Resources:
             Path: /entities/{id}
             Method: get
       Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref EntitiesTable
 
@@ -88,6 +92,7 @@ Resources:
             Path: /entities
             Method: post
       Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref EntitiesTable
 
@@ -107,6 +112,7 @@ Resources:
             Path: /entities/{id}
             Method: delete
       Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
         - DynamoDBCrudPolicy:
             TableName: !Ref EntitiesTable
 

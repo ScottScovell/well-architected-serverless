@@ -1,4 +1,88 @@
-# Basic Lambda Service
+
+# Part 1 - Enabling CloudWatch Lambda Insights
+
+CloudWatch Lambda Insights is a monitoring and troubleshooting solution for serverless applications running on AWS Lambda. The solution collects, aggregates, and summarizes system-level metrics including CPU time, memory, disk, and network. It also collects, aggregates, and summarizes diagnostic information such as cold starts and Lambda worker shutdowns to help you isolate issues with your Lambda functions and resolve them quickly.
+
+Lambda Insights uses a new CloudWatch Lambda extension, which is provided as a Lambda layer. When you install this extension on a Lambda function, it collects system-level metrics and emits a single performance log event for every invocation of that Lambda function. CloudWatch uses embedded metric formatting to extract metrics from the log events.
+
+See [AWS Docs](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights.html) for more information
+
+## Add the Lambda Insights Layer
+
+To add the layer to all functions, use the Globals section and specify which version of the Lambda extension to use.
+
+>Note: Available versions of the Lambda Insights Extension can be found [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Lambda-Insights-extension-versions.html)
+
+Add the Layer to the Globals section of our `template.yaml` file as follows
+
+```yaml
+Globals:
+  Function:
+    Timeout: 30
+    Layers:
+      - !Sub "arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14"
+```
+
+Now add the `CloudWatchLambdaInsightsExecutionRolePolicy` IAM policy to each function (currently not supported in the Globals section)
+
+```yaml
+  ListEntitiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      ...
+      Policies:
+        - CloudWatchLambdaInsightsExecutionRolePolicy
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntitiesTable
+```
+
+Use the SAM CLI to validate the changes to the SAM template
+
+```bash
+sam validate
+```
+
+You should see `template.yaml is a valid SAM Template`
+
+Now use the SAM CLI to build and deploy the application to AWS.
+
+```bash
+sam build --use-container
+sam deploy --guided
+```
+
+Use the following settings during the guided deployment
+
+```bash
+Setting default arguments for 'sam deploy'
+=========================================
+Stack Name [sam-app]: well-architected-serverless
+AWS Region [us-east-1]: 
+Parameter REGION [us-east-1]: 
+Confirm changes before deploy [y/N]: y
+Allow SAM CLI IAM role creation [Y/n]: Y
+ListEntitiesFunction may not have authorization defined, Is this okay? [y/N]: y
+GetEntityFunction may not have authorization defined, Is this okay? [y/N]: y
+CreateEntityFunction may not have authorization defined, Is this okay? [y/N]: y
+DeleteEntityFunction may not have authorization defined, Is this okay? [y/N]: y
+Save arguments to configuration file [Y/n]: Y
+SAM configuration file [samconfig.toml]: 
+SAM configuration environment [default]: 
+```
+
+## Viewing Lambda Insights in the CloudWatch Console
+
+Generate some traffic using the API Gatway console, Postman, or curl to execute requests against our application
+
+For example, the following bash command simulates 100 invocations of the ListEntitiesFunction via the deployed API Gateway endpoint.
+
+```bash
+for run in {1..100}; do curl https://3zk9g9go06.execute-api.us-east-1.amazonaws.com/Prod/entities/; sleep 5; done
+```
+
+In the CloudWatch Console, navigate to Lambda Insights and select Multi-Function to view aggregated metrics for our Lambda functions. Switch to Single-function and select a specific Lamnda function to view performance metrics, performance logs, and application logs for that function.
+
+# Exploring the Basic Lambda Service
 
 This project contains source code and supporting files for a basic Lambda service that you can deploy with the SAM CLI. The basic lambda service application exposes RESTful API endpoints to invoke serverless CRUD operations backed by a NoSQL serverless data store.
 
