@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  basic-lambda-service
+
+  SAM Template for basic-lambda-service 
+    API Gateway -> Lambda -> DynamoDB 
+
+Globals:
+  Function:
+    Timeout: 30
+
+Parameters:
+  REGION:
+    Type: String
+    Default: us-east-1
+
+Resources:
+  EntitiesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "PK"
+          AttributeType: "S"
+        - AttributeName: "SK"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "PK"
+          KeyType: "HASH"
+        - AttributeName: "SK"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: "Entities"
+
+  ListEntitiesFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ./src/list_entities/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          REGION: !Ref REGION    
+      Events:
+        GetEntity:
+          Type: Api
+          Properties:
+            Path: /entities
+            Method: get       
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntitiesTable
+
+  GetEntityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ./src/get_entity/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          REGION: !Ref REGION
+      Events:
+        GetEntity:
+          Type: Api
+          Properties:
+            Path: /entities/{id}
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntitiesTable
+
+  CreateEntityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ./src/create_entity/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          REGION: !Ref REGION
+      Events:
+        GetEntity:
+          Type: Api
+          Properties:
+            Path: /entities
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntitiesTable
+
+  DeleteEntityFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ./src/delete_entity/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          REGION: !Ref REGION     
+      Events:
+        GetEntity:
+          Type: Api
+          Properties:
+            Path: /entities/{id}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EntitiesTable
+
+Outputs:
+  EntitiesApi:
+    Description: "API Gateway endpoint URL for Prod stage for Create Entity Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/Entities/"
+  CreateEntityFunction:
+    Description: "Create Entity Lambda Function ARN"
+    Value: !GetAtt CreateEntityFunction.Arn
+  CreateEntityFunctionIamRole:
+    Description: "Implicit IAM Role created for Create Entity function"
+    Value: !GetAtt CreateEntityFunctionRole.Arn
+  GetEntityFunction:
+    Description: "Get Entity Lambda Function ARN"
+    Value: !GetAtt GetEntityFunction.Arn
+  GetEntityFunctionIamRole:
+    Description: "Implicit IAM Role created for Get Entity function"
+    Value: !GetAtt GetEntityFunctionRole.Arn
+  ListEntitiesFunction:
+    Description: "List Entities Lambda Function ARN"
+    Value: !GetAtt ListEntitiesFunction.Arn
+  ListEntitiesFunctionIamRole:
+    Description: "Implicit IAM Role created for List Entities function"
+    Value: !GetAtt ListEntitiesFunctionRole.Arn
+  DeleteEntityFunction:
+    Description: "Delete Entity Lambda Function ARN"
+    Value: !GetAtt DeleteEntityFunction.Arn
+  DeleteEntityFunctionIamRole:
+    Description: "Implicit IAM Role created for Delete Entity function"
+    Value: !GetAtt DeleteEntityFunctionRole.Arn
+  EntitiesTable:
+    Description: "DynamoDB Table"
+    Value: !Ref EntitiesTable
+  EntitiesTableArn:
+    Description: "DynamoDB Table ARN"
+    Value: !GetAtt EntitiesTable.Arn

@@ -1,0 +1,57 @@
+{
+  "ModelName": "Basic Lambda Service",
+  "ModelMetadata": {
+    "Author": "",
+    "DateCreated": "Mar 07, 2021, 12:23 AM",
+    "DateLastModified": "Mar 07, 2021, 12:24 AM",
+    "Description": "",
+    "AWSService": "Amazon DynamoDB",
+    "Version": "2.0"
+  },
+  "DataModel": [
+    {
+      "TableName": "Entities",
+      "KeyAttributes": {
+        "PartitionKey": {
+          "AttributeName": "PK",
+          "AttributeType": "S"
+        },
+        "SortKey": {
+          "AttributeName": "SK",
+          "AttributeType": "S"
+        }
+      },
+      "NonKeyAttributes": [
+        {
+          "AttributeName": "Type",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "Details",
+          "AttributeType": "M"
+        }
+      ],
+      "TableData": [
+        {
+          "PK": {
+            "S": "ent#0"
+          },
+          "SK": {
+            "S": "ent#0"
+          },
+          "Type": {
+            "S": "Entity"
+          },
+          "Details": {
+            "M": {
+              "FirstKey": "Value"
+            }
+          }
+        }
+      ],
+      "DataAccess": {
+        "MySql": {}
+      }
+    }
+  ]
+}

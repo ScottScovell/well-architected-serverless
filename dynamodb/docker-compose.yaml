@@ -1,0 +1,20 @@
+version: '3'
+
+networks:
+  serverless-local:
+    name: serverless-local
+
+volumes: 
+  dynamodb-data:
+    name: dynamodb-local
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/
+    volumes:
+     - dynamodb-data:/home/dynamodblocal/
+    ports:
+     - "8000:8000"
+    networks:
+      - serverless-local
