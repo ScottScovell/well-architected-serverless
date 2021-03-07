@@ -82,6 +82,35 @@ for run in {1..100}; do curl https://3zk9g9go06.execute-api.us-east-1.amazonaws.
 
 In the CloudWatch Console, navigate to Lambda Insights and select Multi-Function to view aggregated metrics for our Lambda functions. Switch to Single-function and select a specific Lamnda function to view performance metrics, performance logs, and application logs for that function.
 
+## Enable X-Ray Tracing
+
+You can use AWS X-Ray to visualize the components of your application, identify performance bottlenecks, and troubleshoot requests that resulted in an error. Your Lambda functions send trace data to X-Ray, and X-Ray processes the data to generate a service map and searchable trace summaries.
+    
+If you've enabled X-Ray tracing in a service that invokes your function, Lambda sends traces to X-Ray automatically. The upstream service, such as Amazon API Gateway, or an application hosted on Amazon EC2 that is instrumented with the X-Ray SDK, samples incoming requests and adds a tracing header that tells Lambda to send traces or not.
+
+To trace requests that don't have a tracing header, enable active tracing in your function's configuration.
+
+```yaml
+Globals:
+  Function:
+    Timeout: 30
+    Tracing: Active
+    Layers:
+      - !Sub "arn:aws:lambda:${AWS::Region}:580247275435:layer:LambdaInsightsExtension:14"
+```
+
+Redploy your SAM stack and generate some traffic once again so we can see trace activity in the console. (see above)
+
+## Viewing the X-Ray Service Map, Traces, and Analytics
+
+In the X-Ray console, navigate to the Service map. After a few mins you should see your Lambda functions appearing in the map showing health and performance metrics. Icons can be sized by health or volume of traffic. 
+
+Selecting a function also shows details of the service with links through to trace logs and analytics.
+
+TODO - Traces
+
+TODO - Analytics
+
 # Exploring the Basic Lambda Service
 
 This project contains source code and supporting files for a basic Lambda service that you can deploy with the SAM CLI. The basic lambda service application exposes RESTful API endpoints to invoke serverless CRUD operations backed by a NoSQL serverless data store.
