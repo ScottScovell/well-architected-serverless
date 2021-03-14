@@ -2,9 +2,10 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "basic-lambda-service"
+stack_name = "well-architected-serverless"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-qgz5n1fpubn8"
-s3_prefix = "basic-lambda-service"
+s3_prefix = "well-architected-serverless"
 region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "REGION=\"us-east-1\""
+confirm_changeset = true

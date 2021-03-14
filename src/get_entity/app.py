@@ -3,7 +3,20 @@ import os
 import json
 from boto3.dynamodb.conditions import Key
 
+# Import AWS Lambda Powertools
+from aws_lambda_powertools import Tracer, Logger, Metrics
+
+tracer = Tracer()
+logger = Logger()
+metrics = Metrics()
+
+@logger.inject_lambda_context
+@metrics.log_metrics
+@tracer.capture_lambda_handler
 def lambda_handler(message, context):
+
+    # Simple log statement
+    logger.info('## Get Entity')
 
     if ('pathParameters' not in message or
             message['httpMethod'] != 'GET'):
@@ -17,8 +30,11 @@ def lambda_handler(message, context):
     region = os.environ.get('REGION', 'us-east-1')
     environment = os.environ.get('AWS_SAM_LOCAL', 'false')
 
-    print(environment)
-    print(region)
+    # Log using object structure
+    logger.info({
+        "environment": environment,
+        "region": region
+    })
 
     if os.environ.get('AWS_SAM_LOCAL', 'false') == 'true':
         ddb = boto3.resource(
@@ -38,7 +54,9 @@ def lambda_handler(message, context):
         results = table.query(
             KeyConditionExpression=Key('PK').eq(entity_id) & Key('SK').eq(entity_id)
         )
-        print(results)
+
+        # Trace DynamoDB results as custom metadata
+        tracer.put_metadata(key="dynamodb_results", value=results)
 
         # return only the details attribute of the entity
         response = [ item['Details'] for item in results['Items'] ]
@@ -48,6 +66,6 @@ def lambda_handler(message, context):
             'headers': {},
             'body': json.dumps(response)
         }
-    except Exception as e:
-        print('Caught exception: ', e)
-        raise        
+    except Exception:
+        logger.exception('Caught exception')
+        raise

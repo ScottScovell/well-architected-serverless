@@ -6,14 +6,23 @@ Description: >
   SAM Template for basic-lambda-service 
     API Gateway -> Lambda -> DynamoDB 
 
-Globals:
-  Function:
-    Timeout: 30
-
 Parameters:
   REGION:
     Type: String
     Default: us-east-1
+
+Globals:
+  Api:    
+    TracingEnabled: true
+  Function:
+    Timeout: 30
+    Tracing: Active
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: well-architected-serverless
+        POWERTOOLS_LOGGER_LOG_EVENT: True
+        POWERTOOLS_METRICS_NAMESPACE: well-architected-serverless
 
 Resources:
   EntitiesTable:
